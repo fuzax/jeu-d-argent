@@ -12,7 +12,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="styles.css" />
-    <script src="app.js" defer></script>
+    <script type="module" src="app.js"></script>
   </head>
   <body>
     <div class="app-shell">
@@ -160,7 +160,7 @@
                 <div class="slots-controls"><div class="wager-block"><label for="slotsBet">VOTRE MISE</label><div class="wager-input-wrap"><span>◆</span><input id="slotsBet" class="bet-input" type="number" min="1" step="10" value="50" inputmode="numeric" /><span class="wager-unit">CR</span></div><div class="quick-bets" aria-label="Choisir une mise"><button type="button" data-add="10">+10</button><button type="button" data-add="25">+25</button><button type="button" data-add="100">+100</button></div></div><button class="primary-button" id="spinSlotsButton" type="button">Tourner <span aria-hidden="true">→</span></button></div>
               </div>
             </div>
-            <div class="game-footnote"><span>✳</span> Trois symboles identiques : 10× la mise <span class="footnote-divider">·</span> Deux identiques : 2× la mise <span class="footnote-right">FAITES VOS JEUX</span></div>
+            <div class="game-footnote"><span>✳</span> Trois symboles identiques : 4× la mise <span class="footnote-divider">·</span> Deux identiques : 2× la mise <span class="footnote-right">FAITES VOS JEUX</span></div>
           </section>
 
           <section class="game-view" id="coinflipView" aria-label="Pile ou face" hidden>
@@ -227,7 +227,7 @@
                 <div class="keno-grid" id="kenoGrid" aria-label="Choisissez cinq numéros de 1 à 20"></div>
                 <p class="keno-selection" id="kenoSelection" aria-live="polite">0 / 5 numéros choisis</p>
                 <div class="extra-game-controls"><div class="wager-block"><label for="kenoBet">VOTRE MISE</label><div class="wager-input-wrap"><span>◆</span><input id="kenoBet" class="bet-input" type="number" min="1" step="10" value="50" inputmode="numeric" /><span class="wager-unit">CR</span></div></div><button class="primary-button" id="drawKenoButton" type="button" disabled>Tirer les numéros <span>→</span></button></div>
-                <p class="extra-game-result" id="kenoResult" aria-live="polite">2 bons : 2× · 3 bons : 5× · 4 bons : 20× · 5 bons : 100×</p>
+                <p class="extra-game-result" id="kenoResult" aria-live="polite">2 bons : 2× · 3 bons : 4× · 4 bons : 15× · 5 bons : 100×</p>
               </div>
             </div>
             <div class="game-footnote"><span>▦</span> Tirage sans remise · 0 ou 1 bon numéro : mise perdue <span class="footnote-right">FAITES VOS JEUX</span></div>
@@ -255,7 +255,7 @@
                 <p class="section-kicker">CINQ LANCERS · UN SEUL SCORE</p><h2>Le défi des <em>cinq tours.</em></h2>
                 <div class="tournament-score"><span id="tournamentRound">0 / 5 LANCERS</span><strong id="tournamentPoints">0</strong><small>POINTS</small></div>
                 <div class="tournament-dice" id="tournamentDice">⚄ <span>+</span> ⚂</div>
-                <p class="tournament-prizes">2 points : 100 CR · 4 points : 200 CR · 6 points : 500 CR · 8+ : 1 000 CR</p>
+                <p class="tournament-prizes">2 points : 35 CR · 4 points : 100 CR · 6 points : 250 CR · 8+ : 700 CR</p>
                 <div class="extra-game-controls"><span class="entry-fee">Entrée : 100 crédits</span><button class="primary-button" id="tournamentButton" type="button">Commencer <span>→</span></button></div>
                 <p class="extra-game-result" id="tournamentResult" aria-live="polite">Un total de 7 rapporte 2 points ; 8 ou plus en rapporte 1.</p>
               </div>

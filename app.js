@@ -1,3 +1,6 @@
+import { bestPokerHand, calculateKenoPayout, calculateSlotPayout, comparePokerHands, tournamentReward } from "./game-rules.mjs";
+import { createSaveData, normalizeSaveData } from "./save-data.mjs";
+
 const STARTING_BALANCE = 2500;
 const DAILY_BONUS = 250;
 const HISTORY_LIMIT = 5;
@@ -171,12 +174,19 @@ function localDateKey() {
   return `${now.getFullYear()}-${month}-${day}`;
 }
 
-function saveBalance() {
+function writeLocalValue(key, value) {
   try {
-    localStorage.setItem("la-chance-balance", String(state.balance));
+    localStorage.setItem(key, value);
+    return true;
   } catch {
-    showToast("Solde non sauvegardé sur cet appareil.");
+    return false;
   }
+}
+
+function saveBalance() {
+  const saved = writeLocalValue("la-chance-balance", String(state.balance));
+  if (!saved) showToast("Solde gardé pour cette session, mais non sauvegardé.");
+  return saved;
 }
 
 function saveActivity() {
@@ -189,7 +199,9 @@ function saveActivity() {
 }
 
 function savePreferences() {
-  localStorage.setItem("la-chance-preferences", JSON.stringify(state.preferences));
+  const saved = writeLocalValue("la-chance-preferences", JSON.stringify(state.preferences));
+  if (!saved) showToast("Préférences gardées pour cette session seulement.");
+  return saved;
 }
 
 function renderBalance() {
@@ -197,8 +209,9 @@ function renderBalance() {
   document.querySelectorAll(".bet-input").forEach((input) => {
     input.max = String(state.balance);
   });
-  saveBalance();
+  const saved = saveBalance();
   updateLeaderboard();
+  return saved;
 }
 
 function renderActivity() {
@@ -311,7 +324,7 @@ function updateMissionProgress(game, won, wager) {
   state.missions.wagered += wager;
   if (won && ["Poker", "Tournoi"].includes(game)) state.missions.specialWins += 1;
   if (!state.missions.games.includes(game)) state.missions.games.push(game);
-  localStorage.setItem("la-chance-missions", JSON.stringify(state.missions));
+  if (!writeLocalValue("la-chance-missions", JSON.stringify(state.missions))) showToast("Progression des missions non sauvegardée sur cet appareil.");
   renderMissions();
 }
 
@@ -319,10 +332,10 @@ function claimMission(id) {
   const mission = MISSIONS.find((item) => item.id === id);
   if (!mission || state.missions.claimed.includes(id) || missionProgress(mission) < mission.target) return;
   state.missions.claimed.push(id);
-  localStorage.setItem("la-chance-missions", JSON.stringify(state.missions));
-  changeBalance(mission.reward);
+  const missionSaved = writeLocalValue("la-chance-missions", JSON.stringify(state.missions));
+  const balanceSaved = changeBalance(mission.reward);
   renderMissions();
-  showToast(`Mission accomplie : +${mission.reward} crédits !`);
+  showToast(missionSaved && balanceSaved ? `Mission accomplie : +${mission.reward} crédits !` : `+${mission.reward} crédits ajoutés pour cette session ; sauvegarde indisponible.`);
   playSound("reward");
 }
 
@@ -330,9 +343,9 @@ function updateAchievements() {
   const newlyUnlocked = ACHIEVEMENTS.filter((item) => !state.achievements.includes(item.id) && item.unlocked(state.stats));
   if (newlyUnlocked.length === 0) return;
   state.achievements.push(...newlyUnlocked.map((item) => item.id));
-  localStorage.setItem("la-chance-achievements", JSON.stringify(state.achievements));
+  const saved = writeLocalValue("la-chance-achievements", JSON.stringify(state.achievements));
   renderAchievements();
-  showToast(`Nouveau succès : ${newlyUnlocked[0].title} !`);
+  showToast(saved ? `Nouveau succès : ${newlyUnlocked[0].title} !` : `Succès obtenu pour cette session : ${newlyUnlocked[0].title}.`);
 }
 
 function renderAchievements() {
@@ -434,14 +447,10 @@ function playSound(type) {
 function claimDailyBonus() {
   if (state.bonusClaimedOn === localDateKey()) return;
   state.bonusClaimedOn = localDateKey();
-  try {
-    localStorage.setItem("la-chance-bonus-date", state.bonusClaimedOn);
-  } catch {
-    showToast("Le bonus n’a pas pu être sauvegardé.");
-  }
-  changeBalance(DAILY_BONUS);
+  const bonusSaved = writeLocalValue("la-chance-bonus-date", state.bonusClaimedOn);
+  const balanceSaved = changeBalance(DAILY_BONUS);
   renderDailyBonus();
-  showToast("250 crédits ajoutés à votre solde.");
+  showToast(bonusSaved && balanceSaved ? "250 crédits ajoutés à votre solde." : "250 crédits ajoutés pour cette session ; sauvegarde indisponible.");
 }
 
 function showToast(message) {
@@ -736,7 +745,7 @@ async function spinSlots() {
   reels.forEach((reel, index) => { reel.textContent = results[index]; });
   const isTriple = results[0] === results[1] && results[1] === results[2];
   const isPair = !isTriple && new Set(results).size < 3;
-  const payout = isTriple ? bet * 10 : isPair ? bet * 2 : 0;
+  const payout = calculateSlotPayout(bet, results);
   if (payout) changeBalance(payout);
   document.querySelector("#slotsResult").textContent = isTriple ? `Trois symboles ! Vous remportez ${money.format(payout)} crédits.` : isPair ? `Une paire ! ${money.format(payout)} crédits dans votre poche.` : "Pas de combinaison cette fois. Un autre tour ?";
   recordGame("Machines à sous", isTriple ? "Trois symboles" : isPair ? "Une paire" : "Pas de combinaison", bet, payout);
@@ -896,8 +905,7 @@ function drawKeno() {
   const draw = new Set();
   while (draw.size < 5) draw.add(1 + Math.floor(Math.random() * 20));
   const hits = state.kenoPicks.filter((number) => draw.has(number)).length;
-  const multipliers = [0, 0, 2, 5, 20, 100];
-  const payout = bet * multipliers[hits];
+  const payout = calculateKenoPayout(bet, hits);
   document.querySelectorAll(".keno-number").forEach((button) => button.classList.toggle("is-hit", draw.has(Number(button.dataset.number))));
   const drawnNumbers = [...draw].sort((left, right) => left - right).join(", ");
   const message = hits < 2 ? `${hits} bon numéro. Pas de gain cette fois. Tirage : ${drawnNumbers}.` : `${hits} bons numéros ! ${money.format(payout)} crédits versés. Tirage : ${drawnNumbers}.`;
@@ -918,14 +926,6 @@ function renderTournament() {
   document.querySelector("#tournamentPoints").textContent = String(tournament.points);
   document.querySelector("#tournamentStatus").textContent = tournament.active ? "TOURNOI EN COURS" : tournament.round === 5 ? "TOURNOI TERMINÉ" : "INSCRIPTION : 100 CR";
   document.querySelector("#tournamentButton").innerHTML = tournament.active ? "Lancer les dés <span>→</span>" : tournament.round === 5 ? "Rejouer <span>→</span>" : "Commencer <span>→</span>";
-}
-
-function tournamentReward(points) {
-  if (points >= 8) return 1000;
-  if (points >= 6) return 500;
-  if (points >= 4) return 200;
-  if (points >= 2) return 100;
-  return 0;
 }
 
 function playTournament() {
@@ -969,60 +969,6 @@ function makePokerDeck() {
     [deck[index], deck[swapIndex]] = [deck[swapIndex], deck[index]];
   }
   return deck;
-}
-
-function pokerRankValue(rank) {
-  if (rank === "A") return 14;
-  if (rank === "K") return 13;
-  if (rank === "Q") return 12;
-  if (rank === "J") return 11;
-  return Number(rank);
-}
-
-function evaluatePokerHand(cards) {
-  const values = cards.map((card) => pokerRankValue(card.rank)).sort((left, right) => right - left);
-  const counts = new Map();
-  values.forEach((value) => counts.set(value, (counts.get(value) || 0) + 1));
-  const groups = [...counts].sort((left, right) => right[1] - left[1] || right[0] - left[0]);
-  const flush = cards.every((card) => card.suit === cards[0].suit);
-  const unique = [...new Set(values)].sort((left, right) => right - left);
-  let straightHigh = unique.length === 5 && unique[0] - unique[4] === 4 ? unique[0] : 0;
-  if (!straightHigh && unique.join(",") === "14,5,4,3,2") straightHigh = 5;
-
-  if (flush && straightHigh) return { score: [8, straightHigh], label: "Quinte flush" };
-  if (groups[0][1] === 4) return { score: [7, groups[0][0], groups[1][0]], label: "Carré" };
-  if (groups[0][1] === 3 && groups[1][1] === 2) return { score: [6, groups[0][0], groups[1][0]], label: "Full" };
-  if (flush) return { score: [5, ...values], label: "Couleur" };
-  if (straightHigh) return { score: [4, straightHigh], label: "Quinte" };
-  if (groups[0][1] === 3) return { score: [3, groups[0][0], ...groups.slice(1).map((group) => group[0])], label: "Brelan" };
-  if (groups[0][1] === 2 && groups[1][1] === 2) return { score: [2, groups[0][0], groups[1][0], groups[2][0]], label: "Double paire" };
-  if (groups[0][1] === 2) return { score: [1, groups[0][0], ...groups.slice(1).map((group) => group[0])], label: "Paire" };
-  return { score: [0, ...values], label: "Carte haute" };
-}
-
-function comparePokerHands(left, right) {
-  for (let index = 0; index < Math.max(left.score.length, right.score.length); index += 1) {
-    const difference = (left.score[index] || 0) - (right.score[index] || 0);
-    if (difference !== 0) return difference;
-  }
-  return 0;
-}
-
-function bestPokerHand(cards) {
-  let best = null;
-  for (let first = 0; first < cards.length - 4; first += 1) {
-    for (let second = first + 1; second < cards.length - 3; second += 1) {
-      for (let third = second + 1; third < cards.length - 2; third += 1) {
-        for (let fourth = third + 1; fourth < cards.length - 1; fourth += 1) {
-          for (let fifth = fourth + 1; fifth < cards.length; fifth += 1) {
-            const hand = evaluatePokerHand([cards[first], cards[second], cards[third], cards[fourth], cards[fifth]]);
-            if (!best || comparePokerHands(hand, best) > 0) best = hand;
-          }
-        }
-      }
-    }
-  }
-  return best;
 }
 
 function dealPoker() {
