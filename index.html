@@ -34,6 +34,8 @@
               <label for="cardBack">DOS DES CARTES</label><select id="cardBack"><option value="classic">Classique</option><option value="ruby">Rubis</option><option value="ocean">Bleu nuit</option></select>
               <label class="sound-setting" for="soundToggle"><input id="soundToggle" type="checkbox" /> SON</label>
               <label class="sound-setting" for="animationsToggle"><input id="animationsToggle" type="checkbox" checked /> ANIMATIONS</label>
+              <div class="save-transfer"><button id="exportSaveButton" type="button">Exporter la sauvegarde</button><button id="importSaveButton" type="button">Importer une sauvegarde</button><input id="importSaveInput" type="file" accept="application/json,.json" hidden /></div>
+              <p class="save-status" id="saveStatus" aria-live="polite">Sauvegarde locale à cet appareil.</p>
             </div>
           </details>
         </div>

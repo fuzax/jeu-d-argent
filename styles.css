@@ -47,11 +47,15 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--gold-bright
 .settings-menu summary { width: 32px; height: 32px; border: 1px solid var(--line); border-radius: 50%; color: var(--muted); display: grid; place-items: center; font-size: 16px; list-style: none; cursor: pointer; }
 .settings-menu summary::-webkit-details-marker { display: none; }
 .settings-menu summary:hover, .settings-menu[open] summary { border-color: var(--gold); color: var(--gold-bright); }
-.settings-popover { width: 218px; padding: 15px; border: 1px solid rgba(216, 189, 120, .27); border-radius: 3px; position: absolute; top: 41px; right: 0; background: #1a211d; box-shadow: 0 12px 28px rgba(0, 0, 0, .4); display: grid; gap: 7px; }
+.settings-popover { width: 230px; max-height: min(80vh, 620px); overflow-y: auto; padding: 15px; border: 1px solid rgba(216, 189, 120, .27); border-radius: 3px; position: absolute; top: 41px; right: 0; background: #1a211d; box-shadow: 0 12px 28px rgba(0, 0, 0, .4); display: grid; gap: 7px; }
 .settings-popover > label { color: #969e91; font-size: 8px; font-weight: 700; letter-spacing: .9px; }
 .settings-popover input:not([type="checkbox"]), .settings-popover select { width: 100%; height: 31px; margin-bottom: 5px; padding: 0 8px; border: 1px solid rgba(238, 232, 209, .14); border-radius: 2px; background: #111714; color: var(--ink); font-size: 11px; }
 .settings-popover .sound-setting { min-height: 28px; display: flex; align-items: center; gap: 8px; cursor: pointer; }
 .sound-setting input { accent-color: var(--gold); }
+.save-transfer { margin-top: 5px; padding-top: 8px; border-top: 1px solid var(--line); display: grid; gap: 6px; }
+.save-transfer button { min-height: 31px; padding: 0 8px; border: 1px solid rgba(216, 189, 120, .26); border-radius: 2px; background: rgba(216, 189, 120, .045); color: #d8cfb3; text-align: left; font-size: 10px; cursor: pointer; }
+.save-transfer button:hover { border-color: var(--gold); color: var(--gold-bright); }
+.save-status { margin: 0; color: #798277; font-size: 9px; line-height: 1.45; }
 
 .layout { width: min(1420px, 100%); min-height: calc(100vh - 72px); margin: 0 auto; display: grid; grid-template-columns: 224px minmax(0, 1fr); }
 .sidebar { padding: 43px 19px 28px 28px; border-right: 1px solid var(--line); display: flex; flex-direction: column; }

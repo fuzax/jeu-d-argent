@@ -1,9 +1,11 @@
-const CACHE_NAME = "la-chance-v5";
+const CACHE_NAME = "la-chance-v6";
 const APP_FILES = [
   "./",
   "./index.html",
   "./styles.css",
   "./app.js",
+  "./game-rules.mjs",
+  "./save-data.mjs",
   "./manifest.webmanifest",
   "./icon.svg",
 ];

@@ -2,14 +2,15 @@ export const KENO_MULTIPLIERS = [0, 0, 2, 4, 15, 100];
 
 export function calculateSlotPayout(bet, symbols) {
   if (!Number.isSafeInteger(bet) || bet < 1 || !Array.isArray(symbols) || symbols.length !== 3) return 0;
-  if (symbols[0] === symbols[1] && symbols[1] === symbols[2]) return bet * 4;
-  if (new Set(symbols).size < 3) return bet * 2;
-  return 0;
+  const multiplier = symbols[0] === symbols[1] && symbols[1] === symbols[2] ? 4 : new Set(symbols).size < 3 ? 2 : 0;
+  const payout = bet * multiplier;
+  return Number.isSafeInteger(payout) ? payout : 0;
 }
 
 export function calculateKenoPayout(bet, hits) {
   if (!Number.isSafeInteger(bet) || bet < 1 || !Number.isInteger(hits) || hits < 0 || hits > 5) return 0;
-  return bet * KENO_MULTIPLIERS[hits];
+  const payout = bet * KENO_MULTIPLIERS[hits];
+  return Number.isSafeInteger(payout) ? payout : 0;
 }
 
 export function tournamentReward(points) {

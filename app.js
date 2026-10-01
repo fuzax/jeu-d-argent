@@ -58,7 +58,7 @@ function loadBalance() {
     const storedBalance = localStorage.getItem("la-chance-balance");
     if (storedBalance === null) return STARTING_BALANCE;
     const saved = Number(storedBalance);
-    return Number.isFinite(saved) && saved >= 0 ? saved : STARTING_BALANCE;
+    return Number.isSafeInteger(saved) && saved >= 0 ? saved : STARTING_BALANCE;
   } catch {
     return STARTING_BALANCE;
   }
@@ -331,11 +331,23 @@ function updateMissionProgress(game, won, wager) {
 function claimMission(id) {
   const mission = MISSIONS.find((item) => item.id === id);
   if (!mission || state.missions.claimed.includes(id) || missionProgress(mission) < mission.target) return;
-  state.missions.claimed.push(id);
-  const missionSaved = writeLocalValue("la-chance-missions", JSON.stringify(state.missions));
-  const balanceSaved = changeBalance(mission.reward);
+  const previousMissions = JSON.stringify(state.missions);
+  const claimed = [...state.missions.claimed, id];
+  const newBalance = state.balance + mission.reward;
+  if (!Number.isSafeInteger(newBalance) || !writeLocalValue("la-chance-missions", JSON.stringify({ ...state.missions, claimed }))) {
+    showToast("Récompense non récupérée : sauvegarde indisponible.");
+    return;
+  }
+  if (!writeLocalValue("la-chance-balance", String(newBalance))) {
+    writeLocalValue("la-chance-missions", previousMissions);
+    showToast("Récompense non récupérée : solde impossible à sauvegarder.");
+    return;
+  }
+  state.missions.claimed = claimed;
+  state.balance = newBalance;
+  renderBalance();
   renderMissions();
-  showToast(missionSaved && balanceSaved ? `Mission accomplie : +${mission.reward} crédits !` : `+${mission.reward} crédits ajoutés pour cette session ; sauvegarde indisponible.`);
+  showToast(`Mission accomplie : +${mission.reward} crédits !`);
   playSound("reward");
 }
 
@@ -446,11 +458,22 @@ function playSound(type) {
 
 function claimDailyBonus() {
   if (state.bonusClaimedOn === localDateKey()) return;
-  state.bonusClaimedOn = localDateKey();
-  const bonusSaved = writeLocalValue("la-chance-bonus-date", state.bonusClaimedOn);
-  const balanceSaved = changeBalance(DAILY_BONUS);
+  const today = localDateKey();
+  const newBalance = state.balance + DAILY_BONUS;
+  if (!Number.isSafeInteger(newBalance) || !writeLocalValue("la-chance-bonus-date", today)) {
+    showToast("Bonus non récupéré : sauvegarde indisponible.");
+    return;
+  }
+  if (!writeLocalValue("la-chance-balance", String(newBalance))) {
+    writeLocalValue("la-chance-bonus-date", state.bonusClaimedOn);
+    showToast("Bonus non récupéré : solde impossible à sauvegarder.");
+    return;
+  }
+  state.bonusClaimedOn = today;
+  state.balance = newBalance;
+  renderBalance();
   renderDailyBonus();
-  showToast(bonusSaved && balanceSaved ? "250 crédits ajoutés à votre solde." : "250 crédits ajoutés pour cette session ; sauvegarde indisponible.");
+  showToast("250 crédits ajoutés à votre solde.");
 }
 
 function showToast(message) {
@@ -462,7 +485,7 @@ function showToast(message) {
 
 function readBet(input) {
   const bet = Math.floor(Number(input.value));
-  if (!Number.isFinite(bet) || bet < 1) {
+  if (!Number.isSafeInteger(bet) || bet < 1 || bet > Math.floor(Number.MAX_SAFE_INTEGER / 100)) {
     showToast("La mise minimum est de 1 crédit.");
     input.focus();
     return null;
@@ -477,8 +500,13 @@ function readBet(input) {
 }
 
 function changeBalance(amount) {
-  state.balance = Math.max(0, state.balance + amount);
-  renderBalance();
+  const nextBalance = state.balance + amount;
+  if (!Number.isSafeInteger(nextBalance) || nextBalance < 0) {
+    showToast("Cette opération dépasse la limite de crédits autorisée.");
+    return false;
+  }
+  state.balance = nextBalance;
+  return renderBalance();
 }
 
 function setGame(game) {
@@ -917,7 +945,9 @@ function selectChoice(selector, attribute, value) {
 }
 
 function saveTournament() {
-  localStorage.setItem("la-chance-tournament", JSON.stringify(state.tournament));
+  const saved = writeLocalValue("la-chance-tournament", JSON.stringify(state.tournament));
+  if (!saved) showToast("Tournoi gardé pour cette session seulement.");
+  return saved;
 }
 
 function renderTournament() {
@@ -937,7 +967,6 @@ function playTournament() {
     }
     changeBalance(-tournament.entry);
     state.tournament = { active: true, round: 0, points: 0, entry: 100 };
-    saveTournament();
     document.querySelector("#tournamentResult").textContent = "Inscription validée. Lancez les dés pour la première manche.";
   } else {
     const first = 1 + Math.floor(Math.random() * 6);
@@ -992,6 +1021,56 @@ function dealPoker() {
   document.querySelector("#pokerStatus").textContent = comparison > 0 ? "VOUS GAGNEZ" : comparison === 0 ? "ÉGALITÉ" : "LE CROUPIER GAGNE";
   if (payout > 0) changeBalance(payout);
   recordGame("Poker", `${playerHand.label} contre ${dealerHand.label}`, bet, payout);
+}
+
+function exportSave() {
+  const data = createSaveData(state);
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `la-chance-${localDateKey()}.json`;
+  link.click();
+  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+  document.querySelector("#saveStatus").textContent = "Sauvegarde téléchargée.";
+}
+
+async function importSaveFile(file) {
+  if (!file) return;
+  if (file.size > 1_000_000) {
+    showToast("Fichier trop volumineux pour une sauvegarde.");
+    return;
+  }
+  let entries;
+  try {
+    entries = normalizeSaveData(JSON.parse(await file.text()));
+  } catch {
+    showToast("Fichier de sauvegarde invalide ou illisible.");
+    return;
+  }
+  if (!window.confirm("Importer cette sauvegarde remplacera les données actuelles. Continuer ?")) return;
+
+  let previous;
+  try {
+    previous = entries.map(([key]) => [key, localStorage.getItem(key)]);
+    for (const [key, value] of entries) localStorage.setItem(key, value);
+  } catch {
+    if (previous) {
+      for (const [key, value] of previous) {
+        try {
+          if (value === null) localStorage.removeItem(key);
+          else localStorage.setItem(key, value);
+        } catch {
+          break;
+        }
+      }
+    }
+    showToast("Import annulé : impossible de sauvegarder toutes les données.");
+    return;
+  }
+
+  document.querySelector("#saveStatus").textContent = "Sauvegarde importée. Rechargement…";
+  window.setTimeout(() => window.location.reload(), 300);
 }
 
 document.querySelectorAll(".nav-item[data-game]").forEach((button) => button.addEventListener("click", () => setGame(button.dataset.game)));
@@ -1054,6 +1133,12 @@ document.querySelector("#animationsToggle").addEventListener("change", (event) =
   state.preferences.animations = event.target.checked;
   savePreferences();
   applyPreferences();
+});
+document.querySelector("#exportSaveButton").addEventListener("click", exportSave);
+document.querySelector("#importSaveButton").addEventListener("click", () => document.querySelector("#importSaveInput").click());
+document.querySelector("#importSaveInput").addEventListener("change", async (event) => {
+  await importSaveFile(event.target.files[0]);
+  event.target.value = "";
 });
 document.querySelectorAll(".outside-bet").forEach((button) => button.addEventListener("click", () => {
   state.roulettePick = { type: "outside", value: button.dataset.bet, label: button.textContent };

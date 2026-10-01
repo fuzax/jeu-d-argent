@@ -9,6 +9,7 @@ import {
   KENO_MULTIPLIERS,
   tournamentReward,
 } from "../game-rules.mjs";
+import { createSaveData, normalizeSaveData } from "../save-data.mjs";
 
 const card = (rank, suit) => ({ rank, suit });
 
@@ -31,6 +32,7 @@ test("machines à sous ont un rendement inférieur à 100 %", () => {
   assert.equal(calculateSlotPayout(100, ["A", "A", "A"]), 400);
   assert.equal(calculateSlotPayout(100, ["A", "A", "B"]), 200);
   assert.equal(calculateSlotPayout(100, ["A", "B", "C"]), 0);
+  assert.equal(calculateSlotPayout(Number.MAX_SAFE_INTEGER, ["A", "A", "A"]), 0);
 });
 
 test("les gains du keno restent sous la mise moyenne", () => {
@@ -45,6 +47,7 @@ test("les gains du keno restent sous la mise moyenne", () => {
   assert(expectedPayout / totalCombinations < 1);
   assert.equal(calculateKenoPayout(50, 5), 5000);
   assert.equal(calculateKenoPayout(50, 6), 0);
+  assert.equal(calculateKenoPayout(Number.MAX_SAFE_INTEGER, 5), 0);
 });
 
 test("tournoi ne distribue pas plus que son droit d’entrée en moyenne", () => {
@@ -97,4 +100,55 @@ test("gère la quinte basse, les kickers et la meilleure main de sept cartes", (
 
   const sevenCards = [card("A", "S"), card("K", "S"), card("Q", "S"), card("J", "S"), card("10", "S"), card("2", "H"), card("3", "D")];
   assert.equal(bestPokerHand(sevenCards).label, "Quinte flush");
+});
+
+test("exporte et restaure une sauvegarde valide", () => {
+  const savedAt = "2026-10-01T12:00:00.000Z";
+  const state = {
+    balance: 2750,
+    stats: { games: 4, wins: 2, losses: 2, totalWagered: 300, net: 50, gamesByName: { Poker: 2 } },
+    history: [{ game: "Poker", detail: "Paire contre brelan", net: -50, time: "12:00" }],
+    missions: { date: "2026-10-01", played: 4, wins: 2, wagered: 300, specialWins: 1, games: ["Poker"], claimed: ["play"] },
+    achievements: ["first-game"],
+    leaderboard: [{ name: "Joueur", score: 2750 }],
+    preferences: { name: "Joueur", theme: "ocean", cardBack: "ruby", sound: true, animations: false },
+    tournament: { active: true, round: 2, points: 3, entry: 100 },
+    bonusClaimedOn: "2026-10-01",
+  };
+  const exported = createSaveData(state, savedAt);
+  const values = Object.fromEntries(normalizeSaveData(exported));
+  assert.equal(exported.savedAt, savedAt);
+  assert.equal(values["la-chance-balance"], "2750");
+  assert.equal(JSON.parse(values["la-chance-history"])[0].game, "Poker");
+  assert.equal(JSON.parse(values["la-chance-tournament"]).round, 2);
+  assert.equal(values["la-chance-bonus-date"], "2026-10-01");
+});
+
+test("refuse les fichiers invalides et nettoie les données importées", () => {
+  assert.throws(() => normalizeSaveData({ format: "autre", version: 1, balance: 0 }), /sauvegarde/);
+  assert.throws(() => normalizeSaveData({ format: "la-chance-save", version: 1, balance: -1 }), /solde/);
+
+  const values = Object.fromEntries(normalizeSaveData({
+    format: "la-chance-save",
+    version: 1,
+    balance: 100,
+    stats: { games: 3, wins: 9, losses: 9, gamesByName: { Inconnu: 9, Poker: 2 } },
+    history: [{ game: "<img>", detail: "bad", net: 0, time: "12:00" }],
+    missions: { date: "2026-10-01", played: 2, games: ["Inconnu", "Poker"], claimed: ["unknown", "play"] },
+    achievements: ["unknown", "first-game"],
+    leaderboard: [{ name: "<img>", score: 100 }],
+    preferences: { theme: "unknown", cardBack: "unknown" },
+    tournament: { active: true, round: 99, points: 99 },
+  }));
+  const stats = JSON.parse(values["la-chance-stats"]);
+  assert.equal(stats.wins, 3);
+  assert.equal(stats.losses, 0);
+  assert.deepEqual(stats.gamesByName, { Poker: 2 });
+  assert.deepEqual(JSON.parse(values["la-chance-history"]), []);
+  assert.deepEqual(JSON.parse(values["la-chance-missions"]).games, ["Poker"]);
+  assert.deepEqual(JSON.parse(values["la-chance-missions"]).claimed, ["play"]);
+  assert.deepEqual(JSON.parse(values["la-chance-achievements"]), ["first-game"]);
+  assert.equal(JSON.parse(values["la-chance-preferences"]).theme, "emerald");
+  assert.equal(JSON.parse(values["la-chance-tournament"]).active, false);
+  assert.equal(JSON.parse(values["la-chance-leaderboard"])[0].name, "<img>");
 });
