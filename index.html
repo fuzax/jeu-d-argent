@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#111714" />
+    <meta name="description" content="La Chance, votre salle de jeux en crédits virtuels." />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="icon" href="icon.svg" type="image/svg+xml" />
+    <title>La Chance — Salle de jeux</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+    <script src="app.js" defer></script>
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <a class="brand" href="#accueil" aria-label="La Chance, accueil">
+          <span class="brand-mark" aria-hidden="true">L<span>✳</span></span>
+          <span class="brand-name">la chance<span class="brand-dot">.</span></span>
+        </a>
+        <div class="topbar-right">
+          <span class="account-label">VOTRE SOLDE</span>
+          <span class="balance"><span class="coin-icon" aria-hidden="true">◆</span><span id="balance">2 500</span></span>
+          <span class="credits-label">CRÉDITS</span>
+          <button class="reset-button" id="resetButton" type="button" title="Réinitialiser le solde" aria-label="Réinitialiser le solde">↻</button>
+          <details class="settings-menu">
+            <summary aria-label="Ouvrir les réglages" title="Réglages">⚙</summary>
+            <div class="settings-popover">
+              <label for="playerName">NOM DU CLASSEMENT</label><input id="playerName" maxlength="14" value="Joueur" />
+              <label for="tableTheme">TAPIS</label><select id="tableTheme"><option value="emerald">Émeraude</option><option value="wine">Bordeaux</option><option value="ocean">Océan</option></select>
+              <label for="cardBack">DOS DES CARTES</label><select id="cardBack"><option value="classic">Classique</option><option value="ruby">Rubis</option><option value="ocean">Bleu nuit</option></select>
+              <label class="sound-setting" for="soundToggle"><input id="soundToggle" type="checkbox" /> SON</label>
+              <label class="sound-setting" for="animationsToggle"><input id="animationsToggle" type="checkbox" checked /> ANIMATIONS</label>
+            </div>
+          </details>
+        </div>
+      </header>
+
+      <div class="layout">
+        <aside class="sidebar" aria-label="Jeux">
+          <span class="sidebar-label">LA SALLE</span>
+          <nav class="game-nav">
+            <a class="nav-item mission-nav" href="#missionPanel"><span class="nav-icon" aria-hidden="true">✳</span><span>Missions</span><span class="nav-arrow" aria-hidden="true">↓</span></a>
+            <button class="nav-item is-active" type="button" data-game="blackjack" aria-current="page">
+              <span class="nav-icon suit-spade" aria-hidden="true">♠</span><span>Blackjack</span><span class="nav-arrow" aria-hidden="true">›</span>
+            </button>
+            <button class="nav-item" type="button" data-game="roulette">
+              <span class="nav-icon roulette-icon" aria-hidden="true">◎</span><span>Roulette</span><span class="nav-arrow" aria-hidden="true">›</span>
+            </button>
+            <button class="nav-item" type="button" data-game="slots">
+              <span class="nav-icon slots-icon" aria-hidden="true">▦</span><span>Machines à sous</span><span class="nav-arrow" aria-hidden="true">›</span>
+            </button>
+            <button class="nav-item" type="button" data-game="coinflip"><span class="nav-icon" aria-hidden="true">◉</span><span>Pile ou face</span><span class="nav-arrow" aria-hidden="true">›</span></button>
+            <button class="nav-item" type="button" data-game="dice"><span class="nav-icon" aria-hidden="true">⚄</span><span>Dés</span><span class="nav-arrow" aria-hidden="true">›</span></button>
+            <button class="nav-item" type="button" data-game="baccarat"><span class="nav-icon" aria-hidden="true">♢</span><span>Baccarat</span><span class="nav-arrow" aria-hidden="true">›</span></button>
+            <button class="nav-item" type="button" data-game="hilo"><span class="nav-icon" aria-hidden="true">↗</span><span>Hi-Lo</span><span class="nav-arrow" aria-hidden="true">›</span></button>
+            <button class="nav-item" type="button" data-game="keno"><span class="nav-icon" aria-hidden="true">▦</span><span>Keno</span><span class="nav-arrow" aria-hidden="true">›</span></button>
+            <button class="nav-item" type="button" data-game="poker"><span class="nav-icon" aria-hidden="true">♣</span><span>Poker</span><span class="nav-arrow" aria-hidden="true">›</span></button>
+            <button class="nav-item" type="button" data-game="tournament"><span class="nav-icon" aria-hidden="true">♜</span><span>Tournoi</span><span class="nav-arrow" aria-hidden="true">›</span></button>
+          </nav>
+          <div class="sidebar-bottom">
+            <span class="live-indicator"><span></span> TABLE OUVERTE</span>
+            <p>Une partie à la fois.<br />Le reste, c’est le hasard.</p>
+            <span class="sidebar-legal">CRÉDITS VIRTUELS · SANS VALEUR RÉELLE</span>
+          </div>
+        </aside>
+
+        <main class="main-content" id="accueil">
+          <section class="welcome-row">
+            <div>
+              <p class="eyebrow"><span class="eyebrow-line"></span> BIENVENUE À LA TABLE</p>
+              <h1>À vous de <em>jouer.</em></h1>
+            </div>
+            <div class="welcome-note"><span class="note-star" aria-hidden="true">✳</span><span>Une mise. Un peu d’audace.<br />Voyons ce que la chance vous réserve.</span></div>
+          </section>
+
+          <section class="daily-bonus" aria-label="Bonus quotidien">
+            <div class="daily-bonus-copy"><span class="bonus-star" aria-hidden="true">✳</span><span class="bonus-label">BONUS DU JOUR</span><strong>+250</strong><span class="bonus-unit">CRÉDITS</span></div>
+            <button class="bonus-button" id="dailyBonusButton" type="button">Récupérer <span aria-hidden="true">→</span></button>
+          </section>
+
+          <section class="progress-section" id="missionPanel" aria-label="Missions, succès et classement local">
+            <div class="progress-column">
+              <div class="progress-title"><div><p class="section-kicker">RENOUVELÉES CHAQUE JOUR</p><h2>Vos missions<span>.</span></h2></div><span class="progress-reset" id="missionDate"></span></div>
+              <div class="mission-list" id="missionList"></div>
+            </div>
+            <div class="progress-column">
+              <div class="progress-title"><div><p class="section-kicker">VOS JALONS</p><h2>Succès<span>.</span></h2></div><span class="progress-reset" id="achievementCount">0 / 5</span></div>
+              <div class="achievement-list" id="achievementList"></div>
+            </div>
+            <div class="progress-column leaderboard-column">
+              <div class="progress-title"><div><p class="section-kicker">SUR CET APPAREIL</p><h2>Meilleurs scores<span>.</span></h2></div><span class="progress-reset">TOP 5</span></div>
+              <ol class="leaderboard-list" id="leaderboardList"></ol>
+            </div>
+          </section>
+
+          <section class="game-view is-visible" id="blackjackView" aria-label="Table de blackjack">
+            <div class="table-frame blackjack-frame">
+              <div class="table-topline"><span class="table-label"><span class="live-dot"></span> TABLE 01 <i>·</i> BLACKJACK</span><span class="round-status" id="blackjackStatus">À VOUS DE DISTRIBUER</span></div>
+              <div class="felt">
+                <div class="felt-ornament" aria-hidden="true">♠ <span>LA CHANCE</span> ♠</div>
+                <div class="hand dealer-hand">
+                  <div class="hand-heading"><span>CROUPIER</span><span class="hand-total" id="dealerTotal"></span></div>
+                  <div class="cards" id="dealerCards" aria-label="Cartes du croupier"></div>
+                </div>
+                <div class="table-rule"><span></span><i>✳</i><span></span></div>
+                <div class="hand player-hand">
+                  <div class="hand-heading"><span>VOTRE MAIN</span><span class="hand-total" id="playerTotal"></span></div>
+                  <div class="cards" id="playerCards" aria-label="Vos cartes"></div>
+                </div>
+                <div class="felt-message" id="blackjackMessage" aria-live="polite">La table est à vous.</div>
+              </div>
+              <div class="blackjack-controls">
+                <div class="wager-block">
+                  <label for="blackjackBet">VOTRE MISE</label>
+                  <div class="wager-input-wrap"><span>◆</span><input id="blackjackBet" class="bet-input" type="number" min="1" step="10" value="50" inputmode="numeric" /><span class="wager-unit">CR</span></div>
+                  <div class="quick-bets" aria-label="Choisir une mise"><button type="button" data-add="10">+10</button><button type="button" data-add="25">+25</button><button type="button" data-add="100">+100</button></div>
+                </div>
+                <div class="action-group" id="blackjackActions"><button class="primary-button" id="dealButton" type="button">Distribuer <span aria-hidden="true">→</span></button></div>
+              </div>
+            </div>
+            <div class="game-footnote"><span>♧</span> Blackjack naturel payé 3:2 <span class="footnote-divider">·</span> Assurance disponible sur un As <span class="footnote-right">FAITES VOS JEUX</span></div>
+          </section>
+
+          <section class="game-view" id="rouletteView" aria-label="Table de roulette" hidden>
+            <div class="table-frame roulette-frame">
+              <div class="table-topline"><span class="table-label"><span class="live-dot"></span> TABLE 02 <i>·</i> ROULETTE</span><span class="round-status" id="rouletteStatus">FAITES VOS JEUX</span></div>
+              <div class="roulette-layout">
+                <div class="wheel-wrap"><div class="wheel-pointer" aria-hidden="true"></div><div class="wheel" id="rouletteWheel"><div class="wheel-number" id="wheelNumber">0</div></div><div class="wheel-caption">ROULETTE EUROPÉENNE</div></div>
+                <div class="roulette-bets">
+                  <p class="section-kicker">CHOISISSEZ VOTRE NUMÉRO</p>
+                  <div class="number-grid" id="numberGrid" aria-label="Numéros de roulette"></div>
+                  <p class="section-kicker outside-label">OU JOUEZ UNE CHANCE SIMPLE</p>
+                  <div class="outside-bets">
+                    <button type="button" class="outside-bet red-bet" data-bet="red">Rouge</button>
+                    <button type="button" class="outside-bet black-bet" data-bet="black">Noir</button>
+                    <button type="button" class="outside-bet" data-bet="even">Pair</button>
+                    <button type="button" class="outside-bet" data-bet="odd">Impair</button>
+                    <button type="button" class="outside-bet" data-bet="low">1–18</button>
+                    <button type="button" class="outside-bet" data-bet="high">19–36</button>
+                  </div>
+                  <div class="roulette-footer"><span id="rouletteSelection">Sélection : <b>Rouge</b></span><div class="roulette-wager"><label for="rouletteBet">MISE</label><div class="wager-input-wrap"><span>◆</span><input id="rouletteBet" class="bet-input" type="number" min="1" step="10" value="50" inputmode="numeric" /><span class="wager-unit">CR</span></div></div><button class="primary-button" id="spinButton" type="button">Lancer <span aria-hidden="true">→</span></button></div>
+                </div>
+              </div>
+              <div class="roulette-result" id="rouletteResult" aria-live="polite">La bille n’attend que vous.</div>
+            </div>
+            <div class="game-footnote"><span>◎</span> Roulette européenne · 0–36 <span class="footnote-divider">·</span> Numéro plein payé 35:1 <span class="footnote-right">FAITES VOS JEUX</span></div>
+          </section>
+
+          <section class="game-view" id="slotsView" aria-label="Machine à sous" hidden>
+            <div class="table-frame slots-frame">
+              <div class="table-topline"><span class="table-label"><span class="live-dot"></span> MACHINE 03 <i>·</i> LE GRAND JEU</span><span class="round-status" id="slotsStatus">À VOUS DE TOURNER</span></div>
+              <div class="slots-stage">
+                <div class="slots-heading"><p class="section-kicker">UN TOUR PEUT TOUT CHANGER</p><h2>Le grand <em>jeu.</em></h2></div>
+                <div class="slot-machine" aria-label="Résultat de la machine à sous"><div class="slot-display"><div class="reel" id="reelOne">🍒</div><div class="reel" id="reelTwo">7</div><div class="reel" id="reelThree">◆</div></div><span class="machine-caption">LUCKY · LUCKY · LUCKY</span></div>
+                <div class="slots-result" id="slotsResult" aria-live="polite">Les rouleaux sont prêts.</div>
+                <div class="slots-controls"><div class="wager-block"><label for="slotsBet">VOTRE MISE</label><div class="wager-input-wrap"><span>◆</span><input id="slotsBet" class="bet-input" type="number" min="1" step="10" value="50" inputmode="numeric" /><span class="wager-unit">CR</span></div><div class="quick-bets" aria-label="Choisir une mise"><button type="button" data-add="10">+10</button><button type="button" data-add="25">+25</button><button type="button" data-add="100">+100</button></div></div><button class="primary-button" id="spinSlotsButton" type="button">Tourner <span aria-hidden="true">→</span></button></div>
+              </div>
+            </div>
+            <div class="game-footnote"><span>✳</span> Trois symboles identiques : 10× la mise <span class="footnote-divider">·</span> Deux identiques : 2× la mise <span class="footnote-right">FAITES VOS JEUX</span></div>
+          </section>
+
+          <section class="game-view" id="coinflipView" aria-label="Pile ou face" hidden>
+            <div class="table-frame extra-game-frame">
+              <div class="table-topline"><span class="table-label"><span class="live-dot"></span> TABLE 04 <i>·</i> PILE OU FACE</span><span class="round-status">MISE PAYÉE 1:1</span></div>
+              <div class="extra-game-stage">
+                <p class="section-kicker">UN CHOIX, UN LANCER</p><h2>De quel côté <em>tombe la pièce ?</em></h2>
+                <div class="coin-display" id="coinDisplay" aria-live="polite">✳</div>
+                <div class="choice-row" aria-label="Choisir un côté"><button class="choice-button is-selected" type="button" data-coin-pick="heads">Pile</button><button class="choice-button" type="button" data-coin-pick="tails">Face</button></div>
+                <div class="extra-game-controls"><div class="wager-block"><label for="coinBet">VOTRE MISE</label><div class="wager-input-wrap"><span>◆</span><input id="coinBet" class="bet-input" type="number" min="1" step="10" value="50" inputmode="numeric" /><span class="wager-unit">CR</span></div></div><button class="primary-button" id="flipButton" type="button">Lancer la pièce <span>→</span></button></div>
+                <p class="extra-game-result" id="coinResult" aria-live="polite">Pile ou face ? À vous de choisir.</p>
+              </div>
+            </div>
+            <div class="game-footnote"><span>◉</span> Bonne réponse : mise rendue et même montant gagné <span class="footnote-right">FAITES VOS JEUX</span></div>
+          </section>
+
+          <section class="game-view" id="diceView" aria-label="Jeu de dés" hidden>
+            <div class="table-frame extra-game-frame">
+              <div class="table-topline"><span class="table-label"><span class="live-dot"></span> TABLE 05 <i>·</i> LES DÉS</span><span class="round-status">7 : MISE RENDUE</span></div>
+              <div class="extra-game-stage">
+                <p class="section-kicker">DEUX DÉS, TROIS ISSUES</p><h2>Faites vos <em>prédictions.</em></h2>
+                <div class="dice-display" aria-live="polite"><span class="die" id="dieOne">⚄</span><span class="die" id="dieTwo">⚂</span><span class="dice-total" id="diceTotal">?</span></div>
+                <div class="choice-row" aria-label="Choisir une prédiction"><button class="choice-button is-selected" type="button" data-dice-pick="low">Petit · 2–6</button><button class="choice-button" type="button" data-dice-pick="seven">Exactement 7</button><button class="choice-button" type="button" data-dice-pick="high">Grand · 8–12</button></div>
+                <div class="extra-game-controls"><div class="wager-block"><label for="diceBet">VOTRE MISE</label><div class="wager-input-wrap"><span>◆</span><input id="diceBet" class="bet-input" type="number" min="1" step="10" value="50" inputmode="numeric" /><span class="wager-unit">CR</span></div></div><button class="primary-button" id="rollDiceButton" type="button">Lancer les dés <span>→</span></button></div>
+                <p class="extra-game-result" id="diceResult" aria-live="polite">Choisissez petit, sept ou grand.</p>
+              </div>
+            </div>
+            <div class="game-footnote"><span>⚄</span> Petit ou grand : 2× · Sept : 5× · Égalité : mise rendue <span class="footnote-right">FAITES VOS JEUX</span></div>
+          </section>
+
+          <section class="game-view" id="baccaratView" aria-label="Baccarat" hidden>
+            <div class="table-frame extra-game-frame">
+              <div class="table-topline"><span class="table-label"><span class="live-dot"></span> TABLE 06 <i>·</i> BACCARAT</span><span class="round-status">BANQUIER · 1,95:1</span></div>
+              <div class="extra-game-stage">
+                <p class="section-kicker">JOUEUR CONTRE BANQUIER</p><h2>La main la plus <em>proche de neuf.</em></h2>
+                <div class="baccarat-hands"><div><span>JOUEUR</span><div class="baccarat-cards" id="baccaratPlayerCards">—</div><strong id="baccaratPlayerTotal">?</strong></div><span class="baccarat-versus">VS</span><div><span>BANQUIER</span><div class="baccarat-cards" id="baccaratBankerCards">—</div><strong id="baccaratBankerTotal">?</strong></div></div>
+                <div class="choice-row" aria-label="Choisir une main"><button class="choice-button is-selected" type="button" data-baccarat-pick="player">Joueur · 2×</button><button class="choice-button" type="button" data-baccarat-pick="banker">Banquier · 1,95×</button><button class="choice-button" type="button" data-baccarat-pick="tie">Égalité · 9×</button></div>
+                <div class="extra-game-controls"><div class="wager-block"><label for="baccaratBet">VOTRE MISE</label><div class="wager-input-wrap"><span>◆</span><input id="baccaratBet" class="bet-input" type="number" min="1" step="10" value="50" inputmode="numeric" /><span class="wager-unit">CR</span></div></div><button class="primary-button" id="dealBaccaratButton" type="button">Distribuer <span>→</span></button></div>
+                <p class="extra-game-result" id="baccaratResult" aria-live="polite">Faites votre jeu.</p>
+              </div>
+            </div>
+            <div class="game-footnote"><span>♢</span> Les figures valent 0, l’as vaut 1 · Le banquier suit les règles classiques <span class="footnote-right">FAITES VOS JEUX</span></div>
+          </section>
+
+          <section class="game-view" id="hiloView" aria-label="Hi-Lo" hidden>
+            <div class="table-frame extra-game-frame">
+              <div class="table-topline"><span class="table-label"><span class="live-dot"></span> TABLE 07 <i>·</i> HI-LO</span><span class="round-status">BONNE PRÉDICTION · 2×</span></div>
+              <div class="extra-game-stage">
+                <p class="section-kicker">LA PROCHAINE CARTE SERA-T-ELLE PLUS HAUTE ?</p><h2>À vous de <em>deviner.</em></h2>
+                <div class="hilo-cards"><div class="hilo-card" id="hiloCurrentCard">?</div><span class="hilo-arrow">→</span><div class="hilo-card hilo-card-hidden" id="hiloNextCard">?</div></div>
+                <div class="choice-row" aria-label="Prédire la prochaine carte"><button class="choice-button is-selected" type="button" data-hilo-pick="higher">Plus haute</button><button class="choice-button" type="button" data-hilo-pick="lower">Plus basse</button></div>
+                <div class="extra-game-controls"><div class="wager-block"><label for="hiloBet">VOTRE MISE</label><div class="wager-input-wrap"><span>◆</span><input id="hiloBet" class="bet-input" type="number" min="1" step="10" value="50" inputmode="numeric" /><span class="wager-unit">CR</span></div></div><button class="primary-button" id="guessHiloButton" type="button">Retourner la carte <span>→</span></button></div>
+                <p class="extra-game-result" id="hiloResult" aria-live="polite">L’as est la carte la plus haute.</p>
+              </div>
+            </div>
+            <div class="game-footnote"><span>↗</span> Égalité : mise rendue · As haut, deux bas <span class="footnote-right">FAITES VOS JEUX</span></div>
+          </section>
+
+          <section class="game-view" id="kenoView" aria-label="Keno" hidden>
+            <div class="table-frame extra-game-frame">
+              <div class="table-topline"><span class="table-label"><span class="live-dot"></span> TABLE 08 <i>·</i> KENO</span><span class="round-status">CHOISISSEZ 5 NUMÉROS</span></div>
+              <div class="extra-game-stage keno-stage">
+                <p class="section-kicker">5 NUMÉROS CHOISIS, 5 TIRÉS AU SORT</p><h2>Votre grille de <em>chance.</em></h2>
+                <div class="keno-grid" id="kenoGrid" aria-label="Choisissez cinq numéros de 1 à 20"></div>
+                <p class="keno-selection" id="kenoSelection" aria-live="polite">0 / 5 numéros choisis</p>
+                <div class="extra-game-controls"><div class="wager-block"><label for="kenoBet">VOTRE MISE</label><div class="wager-input-wrap"><span>◆</span><input id="kenoBet" class="bet-input" type="number" min="1" step="10" value="50" inputmode="numeric" /><span class="wager-unit">CR</span></div></div><button class="primary-button" id="drawKenoButton" type="button" disabled>Tirer les numéros <span>→</span></button></div>
+                <p class="extra-game-result" id="kenoResult" aria-live="polite">2 bons : 2× · 3 bons : 5× · 4 bons : 20× · 5 bons : 100×</p>
+              </div>
+            </div>
+            <div class="game-footnote"><span>▦</span> Tirage sans remise · 0 ou 1 bon numéro : mise perdue <span class="footnote-right">FAITES VOS JEUX</span></div>
+          </section>
+
+          <section class="game-view" id="pokerView" aria-label="Poker Texas Hold’em" hidden>
+            <div class="table-frame extra-game-frame">
+              <div class="table-topline"><span class="table-label"><span class="live-dot"></span> TABLE 09 <i>·</i> TEXAS HOLD’EM</span><span class="round-status" id="pokerStatus">ABATTAGE À VENIR</span></div>
+              <div class="poker-stage">
+                <p class="section-kicker">TÊTE-À-TÊTE CONTRE LE CROUPIER</p><h2>La meilleure main <em>l’emporte.</em></h2>
+                <div class="poker-seat"><span>CROUPIER</span><div class="poker-cards" id="pokerDealerCards"></div><strong id="pokerDealerHand">Main cachée</strong></div>
+                <div class="community-label">CARTES COMMUNES</div><div class="poker-cards community-cards" id="pokerCommunityCards"></div>
+                <div class="poker-seat player-seat"><span>VOTRE MAIN</span><div class="poker-cards" id="pokerPlayerCards"></div><strong id="pokerPlayerHand">Choisissez votre mise</strong></div>
+                <div class="extra-game-controls"><div class="wager-block"><label for="pokerBet">VOTRE MISE</label><div class="wager-input-wrap"><span>◆</span><input id="pokerBet" class="bet-input" type="number" min="1" step="10" value="50" inputmode="numeric" /><span class="wager-unit">CR</span></div></div><button class="primary-button" id="dealPokerButton" type="button">Distribuer <span>→</span></button></div>
+                <p class="extra-game-result" id="pokerResult" aria-live="polite">Deux cartes en main, cinq cartes communes.</p>
+              </div>
+            </div>
+            <div class="game-footnote"><span>♣</span> Paire · double paire · brelan · quinte · couleur · full · carré · quinte flush <span class="footnote-right">FAITES VOS JEUX</span></div>
+          </section>
+
+          <section class="game-view" id="tournamentView" aria-label="Tournoi de dés" hidden>
+            <div class="table-frame extra-game-frame">
+              <div class="table-topline"><span class="table-label"><span class="live-dot"></span> ÉPREUVE 10 <i>·</i> TOURNOI DE DÉS</span><span class="round-status" id="tournamentStatus">INSCRIPTION : 100 CR</span></div>
+              <div class="extra-game-stage tournament-stage">
+                <p class="section-kicker">CINQ LANCERS · UN SEUL SCORE</p><h2>Le défi des <em>cinq tours.</em></h2>
+                <div class="tournament-score"><span id="tournamentRound">0 / 5 LANCERS</span><strong id="tournamentPoints">0</strong><small>POINTS</small></div>
+                <div class="tournament-dice" id="tournamentDice">⚄ <span>+</span> ⚂</div>
+                <p class="tournament-prizes">2 points : 100 CR · 4 points : 200 CR · 6 points : 500 CR · 8+ : 1 000 CR</p>
+                <div class="extra-game-controls"><span class="entry-fee">Entrée : 100 crédits</span><button class="primary-button" id="tournamentButton" type="button">Commencer <span>→</span></button></div>
+                <p class="extra-game-result" id="tournamentResult" aria-live="polite">Un total de 7 rapporte 2 points ; 8 ou plus en rapporte 1.</p>
+              </div>
+            </div>
+            <div class="game-footnote"><span>♜</span> Inscription payée une seule fois · Récompense versée à la cinquième manche <span class="footnote-right">CRÉDITS VIRTUELS</span></div>
+          </section>
+
+          <section class="activity-panel" aria-label="Statistiques et parties récentes">
+            <div class="activity-heading"><div><p class="section-kicker">VOTRE PARCOURS</p><h2>Le carnet de jeu<span>.</span></h2></div><span class="activity-count" id="activityCount">0 PARTIE</span></div>
+            <div class="stats-row">
+              <div class="stat-item"><span>PARTIES JOUÉES</span><strong id="gamesPlayed">0</strong></div>
+              <div class="stat-item"><span>VICTOIRES</span><strong id="winsCount">0</strong></div>
+              <div class="stat-item"><span>TOTAL MISÉ</span><strong id="totalWagered">0</strong><small>crédits</small></div>
+              <div class="stat-item"><span>BILAN NET</span><strong id="netResult">0</strong></div>
+            </div>
+            <div class="history-heading"><span>DERNIÈRES PARTIES</span><button id="clearHistoryButton" type="button">Effacer l’historique</button></div>
+            <div class="activity-history" id="activityHistory"><p class="empty-history">Vos parties terminées apparaîtront ici.</p></div>
+          </section>
+
+          <footer class="page-footer"><span>LA CHANCE © 2026</span><span>JEU DE LOISIR · CRÉDITS VIRTUELS SANS VALEUR MONÉTAIRE</span></footer>
+        </main>
+      </div>
+    </div>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  </body>
+</html>
